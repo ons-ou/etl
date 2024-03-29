@@ -82,12 +82,12 @@ class EPAAirQualityDownloader:
         download_button.click()
 
         # Consider waiting for a download completion indicator (e.g., progress bar)
-        try:
-            WebDriverWait(self.driver, timeout).until(
-                EC.url_to_be("https://your-download-completion-url")  # Replace with actual URL
-            )
-        except TimeoutException:
-            print("Warning: Timed out waiting for download confirmation URL.")
+        # try:
+        #     WebDriverWait(self.driver, timeout).until(
+        #          EC.url_to_be("https://your-download-completion-url")  # Replace with actual URL
+        #     )
+        # except TimeoutException:
+        #     print("Warning: Timed out waiting for download confirmation URL.")
 
         self.driver.find_element(By.LINK_TEXT, "Download CSV (spreadsheet)").click()
         return self.wait_for_new_file()
