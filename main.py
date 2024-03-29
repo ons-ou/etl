@@ -29,8 +29,15 @@ def parallel_etl(elements, states, years):
 
 if __name__ == "__main__":
     # TODO: final result should only add new data not already in database
-    elements = ["CO"]  # Add all elements
-    states = ["Indiana"]  # Add all states
+    elements = ["CO","NO2","SO2","PM10","Ozone"]  
+    states = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+                 "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+                 "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
+                 "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
+                 "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio",
+                 "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+                 "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+                 "Wisconsin", "Wyoming"]  
     years = range(2020, 2023)  # From 1980 to current year
 
     parallel_etl(elements, states, years)

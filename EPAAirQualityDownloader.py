@@ -4,6 +4,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from utils import create_directory
 
 URL = "https://www.epa.gov/outdoor-air-quality-data/download-daily-data"
@@ -29,23 +32,66 @@ class EPAAirQualityDownloader:
 
         self.driver.get(URL)
 
+
     def download_data(self, element, state, year):
-        # TODO: avoid using so many sleep to be able to successfully download
+        """Downloads data from a website, avoiding excessive sleep.
+
+        Args:
+            element: The element to select (e.g., "PM2.5").
+            state: The state abbreviation (e.g., "CA").
+            year: The year to download data for (e.g., 2023).
+
+        Returns:
+            The downloaded file path (if successful).
+        """
+
+        # Set explicit wait timeouts for better control
+        timeout = 10  # Adjust timeout as needed (in seconds)
+
         self.driver.find_element(By.ID, "poll").click()
         Select(self.driver.find_element(By.ID, "poll")).select_by_visible_text(element)
-        time.sleep(5)
+
+        # Wait for "poll" element to change (optional, for dynamic content)
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.element_to_be_clickable((By.ID, "year"))
+            )
+        except TimeoutException:
+            print("Warning: Timed out waiting for 'year' element after selecting poll.")
+
         self.driver.find_element(By.ID, "year").click()
         Select(self.driver.find_element(By.ID, "year")).select_by_visible_text(str(year))
-        time.sleep(5)
+
+        # Wait for "year" element to change (optional)
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.element_to_be_clickable((By.ID, "state"))
+            )
+        except TimeoutException:
+            print("Warning: Timed out waiting for 'state' element after selecting year.")
+
         self.driver.find_element(By.ID, "state").click()
         Select(self.driver.find_element(By.ID, "state")).select_by_visible_text(state)
-        time.sleep(5)
+
         Select(self.driver.find_element(By.ID, "site")).select_by_value("-1")
-        time.sleep(5)
-        self.driver.find_element(By.XPATH, "//input[@value='Get Data']").click()
-        time.sleep(5)
+
+        # Implement presence check or URL change for download button
+        download_button = WebDriverWait(self.driver, timeout).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@value='Get Data']"))
+        )
+        download_button.click()
+
+        # Consider waiting for a download completion indicator (e.g., progress bar)
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.url_to_be("https://your-download-completion-url")  # Replace with actual URL
+            )
+        except TimeoutException:
+            print("Warning: Timed out waiting for download confirmation URL.")
+
         self.driver.find_element(By.LINK_TEXT, "Download CSV (spreadsheet)").click()
         return self.wait_for_new_file()
+
 
     def wait_for_new_file(self):
         while True:
