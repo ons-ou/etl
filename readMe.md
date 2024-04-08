@@ -25,8 +25,5 @@ added to database. The job should only download data for years not already in da
 
 1. At the moment, the selenium code requires many sleeps to actually work and even then it would 
 fail if running same function parallely. Try to fix it.
-2. Add the code for data cleaning and transformation. Final expected result should be similar to this
-notebook['https://colab.research.google.com/drive/1D0IJF2Ew20Hz6H03ONNGw7GyDLDJLABC?usp=sharing']
-PS. The co_daily_summary already has quite a few transformations. If someone has the code for that add it.
-3. Choose a database to load the data to.
-4. Write the code for the job where you can either extract all data or only new data not in database.
+2. Parallel threads take too much time to work, use airflow instead (I have started the code someone work on it)
+3. Use AWS RDS instead of local database

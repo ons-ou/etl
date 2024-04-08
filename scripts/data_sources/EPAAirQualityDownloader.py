@@ -4,7 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
-from utils import create_directory
+from scripts.utils.utils import create_directory
 
 URL = "https://www.epa.gov/outdoor-air-quality-data/download-daily-data"
 
@@ -43,7 +43,7 @@ class EPAAirQualityDownloader:
         Select(self.driver.find_element(By.ID, "site")).select_by_value("-1")
         time.sleep(5)
         self.driver.find_element(By.XPATH, "//input[@value='Get Data']").click()
-        time.sleep(5)
+        time.sleep(2)
         self.driver.find_element(By.LINK_TEXT, "Download CSV (spreadsheet)").click()
         return self.wait_for_new_file()
 
