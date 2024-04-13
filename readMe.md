@@ -17,6 +17,7 @@ This downloads the newer data. The problem is csv files need to be downloaded pe
 which takes a lot of time.
 
 N.B: Data from this source is missing the arithmetic mean and first max hour values.
+
 Reference: 'https://www.youtube.com/watch?v=PjDQ_MIL8JI'
 
 ### etl
@@ -34,7 +35,8 @@ This contains the code for:
 This contains the code of:
 - data transformation of zip files
 - data extraction of zip files
-    Steps of workflow:
+
+Steps of workflow:
     1. Gets the last update of this site [https://aqs.epa.gov/aqsweb/airdata/download_files.html] and compares it to the cached last update
     2. If they are both the same stops workflow 
     3. If not, gets the last saved date in the element table (if no table exists then uses STAR_DATE in etl_utils) and starts extraction fr
@@ -57,6 +59,7 @@ This contains the code of:
 
 #### Table Columns
 - the columns of the aqi and elements table
+
 P.S: in case of changing the structure of columns, make sure to change the columns_to_keep 
 in data transformation of both Workflows
 
@@ -72,8 +75,10 @@ the dataframe
 1. Run pip install -r requirements.txt
 2. Run the main.py in states_and_counties_tables
 3. Change the constants in etl_utils based on your needs (The start and end date of the data you're getting as well as states and elements)
+
 P.S: states is only needed for selenium workflow
-4. Run the main.py in etl.main.py
+5. Run the main.py in etl.main.py
+
 P.S: There is no main.py for the selenium workflow at the moment due to its slow speed
 
 
