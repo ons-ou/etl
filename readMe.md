@@ -24,13 +24,13 @@ This package defines the functions for Extracting, Transforming, Merging,
 and Loading the air quality data. It handles the processing of the 
 downloaded CSV files.
 
-####BaseWorkflow
+#### BaseWorkflow
 This contains the code for:
 - initializing workflow: Create tables and indexes if not already available and get the last date that is already saved in database.
 - loading data into database
 - starting multiple threads for all elements and years
 
-####ZipWorkflow
+#### ZipWorkflow
 This contains the code of:
 - data transformation of zip files
 - data extraction of zip files
@@ -42,33 +42,33 @@ This contains the code of:
     4. Transforms and loads data into database
     5. Updates cache with the new last site update
     
-####SeleniumWorkflow
+#### SeleniumWorkflow
 This contains the code of:
 - data transformation of csv selenium files
 - data extraction of csv selenium files
 
-###utils
-####Database:
+### utils
+#### Database:
 This contains the code of:
 - database connection
 - creating tables and inserting data
 - creating indexes
 - select max_date from table
 
-####Table Columns
+#### Table Columns
 - the columns of the aqi and elements table
 P.S: in case of changing the structure of columns, make sure to change the columns_to_keep 
 in data transformation of both Workflows
 
-####etl_utils
+#### etl_utils
 - The code for the basic data transformation. This is where you should add any changes to the structure of 
 the dataframe
 
-####states_and_counties_tables
+#### states_and_counties_tables
 - This code should be run first to initialize the state and county tables
 
 
-##Running the project
+## Running the project
 1. Run pip install -r requirements.txt
 2. Run the main.py in states_and_counties_tables
 3. Change the constants in etl_utils based on your needs (The start and end date of the data you're getting as well as states and elements)
@@ -77,7 +77,7 @@ P.S: states is only needed for selenium workflow
 P.S: There is no main.py for the selenium workflow at the moment due to its slow speed
 
 
-##TODO
+## TODO
 1. Change the database connection into a hosted database (AWS)
 2. Figure out a way to speed up downloads for the selenium csv files
 PS:
