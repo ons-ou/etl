@@ -4,6 +4,7 @@ import psycopg2
 
 
 class Database:
+    # TODO: save data
     def __init__(self):
         self.dbname = 'air_quality'
         self.user = 'postgres'
@@ -28,7 +29,23 @@ class Database:
         if self.connection is not None:
             self.connection.close()
 
-    def create_table(self, table_name, columns, primary_keys=None):
+    def table_exists(self, table_name):
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM information_schema.tables
+                    WHERE table_name = %s
+                )
+            """, (table_name,))
+            exists = cursor.fetchone()[0]
+            return exists
+        except psycopg2.Error as e:
+            print("Error checking if table exists:", e)
+            return False
+
+    def create_table(self, table_name, columns, primary_keys=None, foreign_keys=None):
         # Define the columns for the CREATE TABLE query
         columns_query = []
         for column_name, column_type in columns.items():
@@ -38,6 +55,14 @@ class Database:
         if primary_keys:
             primary_key = ", ".join(primary_keys)
             columns_query.append(f"PRIMARY KEY ({primary_key})")
+
+        # Define the foreign key constraints
+        if foreign_keys:
+            for fk_name, ref_table, ref_columns, columns in foreign_keys:
+                fk_columns = ", ".join(columns)
+                ref_columns = ", ".join(ref_columns)
+                columns_query.append(
+                    f"CONSTRAINT {fk_name} FOREIGN KEY ({fk_columns}) REFERENCES {ref_table} ({ref_columns})")
 
         try:
             cursor = self.connection.cursor()
@@ -60,6 +85,16 @@ class Database:
             logging.error("Error inserting data:", e)
             self.connection.rollback()
 
+    def bulk_insert(self, table, columns, values, conflict_keys):
+        try:
+            cursor = self.connection.cursor()
+            query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join(['%s' for _ in columns])}) ON CONFLICT ({', '.join(conflict_keys)}) DO NOTHING"
+            cursor.executemany(query, values)
+            self.connection.commit()
+        except psycopg2.Error as e:
+            logging.error("Error bulk inserting data:", e)
+            self.connection.rollback()
+
     def get_max_date(self, table_name, date_column):
         try:
             cursor = self.connection.cursor()
@@ -71,3 +106,19 @@ class Database:
             logging.error("Error getting max date:", e)
             return None
 
+    def create_month_year_index(db, table_name):
+        try:
+            cursor = db.connection.cursor()
+            index_name = f"{table_name}_month_year_idx"
+            # Check if the index already exists
+            cursor.execute("SELECT COUNT(*) FROM pg_indexes WHERE indexname = %s", (index_name,))
+            if cursor.fetchone()[0] == 0:
+                query = f"CREATE INDEX {index_name} ON {table_name} (EXTRACT(MONTH FROM date_local), EXTRACT(YEAR FROM date_local))"
+                cursor.execute(query)
+                db.connection.commit()
+                logging.info(f"Index {index_name} created successfully")
+            else:
+                logging.info(f"Index {index_name} already exists")
+        except psycopg2.Error as e:
+            logging.error("Error creating index:", e)
+            db.connection.rollback()

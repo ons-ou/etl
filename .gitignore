@@ -4,3 +4,5 @@ config
 dags
 logs
 plugins
+daily_data
+daily_data_zip
