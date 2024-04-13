@@ -37,11 +37,16 @@ This contains the code of:
 - data extraction of zip files
 
 Steps of workflow:
+
     1. Gets the last update of this site [https://aqs.epa.gov/aqsweb/airdata/download_files.html] and compares it to the cached last update
+
     2. If they are both the same stops workflow 
+
     3. If not, gets the last saved date in the element table (if no table exists then uses STAR_DATE in etl_utils) and starts extraction fr
     that date upto LAST_ZIP_DATE (Also in utils extracted from site: year of first row of table in site)
+
     4. Transforms and loads data into database
+
     5. Updates cache with the new last site update
     
 #### SeleniumWorkflow
