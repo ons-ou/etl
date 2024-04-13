@@ -77,7 +77,8 @@ the dataframe
 3. Change the constants in etl_utils based on your needs (The start and end date of the data you're getting as well as states and elements)
 
 P.S: states is only needed for selenium workflow
-5. Run the main.py in etl.main.py
+
+4. Run the main.py in etl.main.py
 
 P.S: There is no main.py for the selenium workflow at the moment due to its slow speed
 
