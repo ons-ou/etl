@@ -1,17 +1,30 @@
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, wait
-from datetime import datetime
+from datetime import timedelta
 
 import pandas as pd
 
 from scripts.data_sources.ZipDownloader import ZipDownloader
 from scripts.etl.BaseWorkflow import BaseWorkflow
-from scripts.utils.etl_utils import common_transformation, LAST_ZIP_DATE, get_last_update_date, get_current_site_update, \
-    update_cache
+from scripts.utils.Database import Database
+from scripts.utils.etl_utils import common_transformation, LAST_ZIP_DATE, insert_element_data, insert_aqi_data, \
+    DEFAULT_START_DATE
+from scripts.utils.zip_workflow_utils import get_last_update_date, get_current_site_update, update_cache
 
 
 class ZipWorkflow(BaseWorkflow):
+    @staticmethod
+    def workflow_init(element):
+        db = BaseWorkflow.workflow_init(element)
+        table_name = str(element).replace('.', '_').lower()+"_data"
+        max_date = db.get_max_query(table_name, "date_local", where_condition="first_max_hour IS NOT NULL")
+        db.disconnect()
+        if max_date is None:
+            return element, DEFAULT_START_DATE
+        else:
+            return element, max_date + timedelta(days=1)
+
     def extract_data(self, element, max_date):
         current_year = LAST_ZIP_DATE.year
         max_year = max_date.year
@@ -54,6 +67,17 @@ class ZipWorkflow(BaseWorkflow):
         co_df = df.drop(columns=['aqi'])
 
         return aqi_df, co_df
+
+    @staticmethod
+    def load_data(aqi_df, element_df, element):
+        db = Database()
+        db.connect()
+
+        insert_aqi_data(db, aqi_df)
+
+        insert_element_data(db, element, element_df, ["arithmetic_mean", "first_max_value"])
+
+        db.disconnect()
 
     def workflow_thread(self):
         if get_last_update_date() == get_current_site_update():

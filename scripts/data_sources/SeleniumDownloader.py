@@ -29,6 +29,12 @@ class SeleniumDownloader(BaseDownloader):
         self.driver.get(URL)
 
     def download_data(self, element, year, state):
+        name = f"{element}_{state}_{year}"
+        csv_file_path = os.path.join(self.download_folder, f"{name}.csv")
+
+        if os.path.exists(csv_file_path):
+            return csv_file_path
+
         self.driver.find_element(By.ID, "poll").click()
         Select(self.driver.find_element(By.ID, "poll")).select_by_visible_text(element)
         time.sleep(5)

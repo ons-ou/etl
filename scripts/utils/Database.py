@@ -4,7 +4,6 @@ import psycopg2
 
 
 class Database:
-    # TODO: save data
     def __init__(self):
         self.dbname = 'air_quality'
         self.user = 'postgres'
@@ -75,30 +74,26 @@ class Database:
             print("Error creating table:", e)
             self.connection.rollback()
 
-    def insert_data(self, table, columns, values):
+    def bulk_insert(self, table, columns, values, conflict_keys, update_columns=None):
         try:
             cursor = self.connection.cursor()
-            query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join(['%s' for _ in values])})"
-            cursor.execute(query, values)
-            self.connection.commit()
-        except psycopg2.Error as e:
-            logging.error("Error inserting data:", e)
-            self.connection.rollback()
-
-    def bulk_insert(self, table, columns, values, conflict_keys):
-        try:
-            cursor = self.connection.cursor()
-            query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join(['%s' for _ in columns])}) ON CONFLICT ({', '.join(conflict_keys)}) DO NOTHING"
+            if update_columns:
+                update_clause = ", ".join([f'"{column}" = excluded."{column}"' for column in update_columns])
+                query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join(['%s' for _ in columns])}) ON CONFLICT ({', '.join(conflict_keys)}) DO UPDATE SET {update_clause}"
+            else:
+                query = f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join(['%s' for _ in columns])}) ON CONFLICT ({', '.join(conflict_keys)}) DO NOTHING"
             cursor.executemany(query, values)
             self.connection.commit()
         except psycopg2.Error as e:
             logging.error("Error bulk inserting data:", e)
             self.connection.rollback()
 
-    def get_max_date(self, table_name, date_column):
+    def get_max_query(self, table_name, date_column, where_condition=None):
         try:
             cursor = self.connection.cursor()
             query = f"SELECT MAX({date_column}) FROM {table_name}"
+            if where_condition:
+                query += f" WHERE {where_condition}"
             cursor.execute(query)
             max_date = cursor.fetchone()[0]
             return max_date

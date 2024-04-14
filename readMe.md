@@ -42,7 +42,8 @@ Steps of workflow:
 
     2. If they are both the same stops workflow 
 
-    3. If not, gets the last saved date in the element table (if no table exists then uses STAR_DATE in etl_utils) and starts extraction fr
+    3. If not, gets the last saved date in the element table (if no table exists then uses STAR_DATE in etl_utils,
+    does not take into consideration the data extracted from selenium since it's missing values) and starts extraction fr
     that date upto LAST_ZIP_DATE (Also in utils extracted from site: year of first row of table in site)
 
     4. Transforms and loads data into database
@@ -71,6 +72,9 @@ in data transformation of both Workflows
 #### etl_utils
 - The code for the basic data transformation. This is where you should add any changes to the structure of 
 the dataframe
+
+#### zip_workflow_utils
+This code ensures that the workflow won't run if all the last updates of site have already been added
 
 #### states_and_counties_tables
 - This code should be run first to initialize the state and county tables

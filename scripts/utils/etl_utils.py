@@ -3,20 +3,16 @@ import pickle
 
 import pandas as pd
 from datetime import datetime
-from bs4 import BeautifulSoup
+from scripts.utils.zip_workflow_utils import get_max_year
 
-import requests
-
-ELEMENTS = ["CO"]
-# STATES = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"]
-STATES = ["Alabama"]
+ELEMENTS = ["CO", "NO2", "Ozone", "PM10", "PM2.5", "SO2"]
+STATES = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"]
 
 # This one will only be used in case tables are empty
 DEFAULT_START_DATE = datetime(1980, 1, 1)
 
 LAST_SELENIUM_DATE = datetime.now()
-
-CACHE_FILE = '../../cache.pkl'
+LAST_ZIP_DATE = datetime(get_max_year(), 1, 1)
 
 
 def common_transformation(df, max_date, columns_to_keep):
@@ -49,70 +45,19 @@ def common_transformation(df, max_date, columns_to_keep):
     return df
 
 
-def get_last_update_date():
-    last_update = None
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, 'rb') as f:
-            cache = pickle.load(f)
-            last_update = cache.get('last_update')
-    return last_update
+def insert_aqi_data(db, aqi_df):
+    conflict_keys = ["date_local", "latitude", "longitude"]
+    # Insert data into aqi_data table
+    aqi_columns = list(aqi_df.columns)
+    aqi_values = [tuple(row) for row in aqi_df.values]
+    db.bulk_insert("aqi_data", aqi_columns, aqi_values, conflict_keys)
 
 
-def get_current_site_update():
-    url = 'https://aqs.epa.gov/aqsweb/airdata/download_files.html'
-
-    # Fetch the webpage
-    response = requests.get(url)
-    if response.status_code == 200:
-        try:
-            soup = BeautifulSoup(response.content, 'html.parser')
-            # Find all tables in the HTML
-            tables = soup.find_all('table', class_='tablebord')
-            if tables:
-                # Get the first table
-                table = tables[2]
-                # Find all rows in the table
-                rows = table.find_all('tr')
-                # Skip the header row
-                row = rows[1]
-                # Get the maximum year
-                max_date = row.find_all('td')[1].text.split('As of ')[-1]
-                return max_date
-        except Exception:
-            return None
-
-
-def update_cache():
-    with open(CACHE_FILE, 'wb') as f:
-        pickle.dump({'last_update': get_current_site_update()}, f)
-
-
-def get_max_year():
-    url = 'https://aqs.epa.gov/aqsweb/airdata/download_files.html'
-
-    # Fetch the webpage
-    response = requests.get(url)
-    if response.status_code == 200:
-        try:
-            soup = BeautifulSoup(response.content, 'html.parser')
-            # Find all tables in the HTML
-            tables = soup.find_all('table', class_='tablebord')
-            if tables:
-                # Get the first table
-                table = tables[2]
-                # Find all rows in the table
-                rows = table.find_all('tr')
-                # Skip the header row
-                row = rows[1]
-                # Get the maximum year
-                max_year = row.find('em').text
-                return int(max_year)
-        except Exception as e:
-            print(f"Error: {e}")
-        return 2023
-
-
-LAST_ZIP_DATE = datetime(get_max_year(), 1, 1)
-
-if __name__ == '__main__':
-    print(get_current_site_update())
+def insert_element_data(db, element, element_df, update_columns = None):
+    conflict_keys = ["date_local", "latitude", "longitude"]
+    # Insert data into element_data table
+    element_columns = list(element_df.columns)
+    element_values = [tuple(row) for row in element_df.values]
+    table_name = f"{str(element).replace('.', '_').lower()}_data"
+    db.bulk_insert(table_name, element_columns, element_values, conflict_keys,
+                   update_columns=update_columns)

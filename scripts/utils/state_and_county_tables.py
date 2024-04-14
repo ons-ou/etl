@@ -78,7 +78,6 @@ def fill_tables():
                    ["state_code", "county_code"])
 
 
-# TODO: run this only once
 if __name__ == '__main__':
     create_tables()
     fill_tables()

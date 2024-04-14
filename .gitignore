@@ -4,6 +4,6 @@ config
 dags
 logs
 plugins
-daily_data
+daily_data_selenium
 daily_data_zip
 cache.pkl

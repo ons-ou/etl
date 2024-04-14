@@ -33,13 +33,8 @@ class BaseWorkflow:
                         primary_keys=["date_local", "latitude", "longitude"],
                         foreign_keys= foreign_keys)
 
-        max_date = db.get_max_date(table_name, "date_local")
         db.create_month_year_index(table_name)
-        db.disconnect()
-        if max_date is None:
-            return element, DEFAULT_START_DATE
-        else:
-            return element, max_date + timedelta(days=1)
+        return db
 
     def extract_data(self, element, max_date):
         raise NotImplementedError("Subclass must implement abstract method")
@@ -50,22 +45,7 @@ class BaseWorkflow:
 
     @staticmethod
     def load_data(aqi_df, element_df, element):
-        db = Database()
-        db.connect()
-
-        conflict_keys = ["date_local", "latitude", "longitude"]
-        # Insert data into aqi_data table
-        aqi_columns = list(aqi_df.columns)
-        aqi_values = [tuple(row) for row in aqi_df.values]
-        db.bulk_insert("aqi_data", aqi_columns, aqi_values, conflict_keys)
-
-        # Insert data into element_data table
-        element_columns = list(element_df.columns)
-        element_values = [tuple(row) for row in element_df.values]
-        table_name = f"{str(element).replace('.', '_').lower()}_data"
-        db.bulk_insert(table_name, element_columns, element_values, conflict_keys)
-
-        db.disconnect()
+        raise NotImplementedError()
 
     def transform_data_and_load(self, element, path, max_date):
         if path is not None:
@@ -74,6 +54,7 @@ class BaseWorkflow:
             logging.info(f"Starting Loading data for {element} from {path}")
             self.load_data(aqi_df, co_df, element)
             logging.info(f"Loaded data for {element} from {path}")
+            os.remove(path)
 
     def workflow_thread(self):
         with ThreadPoolExecutor() as executor:
