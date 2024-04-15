@@ -101,16 +101,16 @@ class Database:
             logging.error("Error getting max date:", e)
             return None
 
-    def create_month_year_index(db, table_name):
+    def create_month_year_index(self, table_name):
         try:
-            cursor = db.connection.cursor()
+            cursor = self.connection.cursor()
             index_name = f"{table_name}_month_year_idx"
             # Check if the index already exists
             cursor.execute("SELECT COUNT(*) FROM pg_indexes WHERE indexname = %s", (index_name,))
             if cursor.fetchone()[0] == 0:
                 query = f"CREATE INDEX {index_name} ON {table_name} (EXTRACT(MONTH FROM date_local), EXTRACT(YEAR FROM date_local))"
                 cursor.execute(query)
-                db.connection.commit()
+                self.connection.commit()
                 logging.info(f"Index {index_name} created successfully")
             else:
                 logging.info(f"Index {index_name} already exists")
