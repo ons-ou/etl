@@ -93,8 +93,8 @@ P.S: There is no main.py for the selenium workflow at the moment due to its slow
 
 
 ## TODO
-1. Change the database connection into a hosted database (AWS)
-2. Figure out a way to speed up downloads for the selenium csv files
+Change the database connection into a hosted database (AWS)
+
 
 PS:
 - if you wish to change structure of tables must change both columns in utils and columns to keep of data transformation function
