@@ -9,7 +9,7 @@ from scripts.data_sources.ZipDownloader import ZipDownloader
 from scripts.etl.BaseWorkflow import BaseWorkflow
 from scripts.utils.Database import Database
 from scripts.utils.etl_utils import common_transformation, LAST_ZIP_DATE, insert_element_data, insert_aqi_data, \
-    DEFAULT_START_DATE
+    DEFAULT_START_DATE, ELEMENT_CODES
 from scripts.utils.zip_workflow_utils import get_last_update_date, get_current_site_update, update_cache
 
 
@@ -17,7 +17,7 @@ class ZipWorkflow(BaseWorkflow):
     @staticmethod
     def workflow_init(element):
         db = BaseWorkflow.workflow_init(element)
-        table_name = str(element).replace('.', '_').lower()+"_data"
+        table_name = str(ELEMENT_CODES[element]).replace('.', '_').lower()+"_data"
         max_date = db.get_max_query(table_name, "date_local", where_condition="first_max_hour IS NOT NULL")
         db.disconnect()
         if max_date is None:
@@ -45,7 +45,7 @@ class ZipWorkflow(BaseWorkflow):
                 yield os.path.join(directory, future.result())
 
     @staticmethod
-    def transform_data(path, max_date):
+    def transform_data(path, max_date, element):
         df = pd.read_csv(path, low_memory=False)
         df.columns = [
             "state_code", "county_code", "site_num", "parameter_code", "poc", "latitude", "longitude", "datum",
@@ -61,10 +61,14 @@ class ZipWorkflow(BaseWorkflow):
             "state_code", "county_code", "latitude", "longitude", "arithmetic_mean", "first_max_hour"
         ]
 
-        df = common_transformation(df, max_date, columns_to_keep)
+        df = common_transformation(df, max_date, columns_to_keep, element)
+        aqi_df = df.drop(columns=['first_max_value', 'first_max_hour', 'arithmetic_mean', 'element_category'])
+        aqi_df.rename(columns={'aqi_category': 'category'}, inplace=True)
 
-        aqi_df = df.drop(columns=['first_max_value', "first_max_hour", "arithmetic_mean"])
-        co_df = df.drop(columns=['aqi'])
+        co_df = df.drop(columns=['aqi', 'aqi_category'])
+        co_df.rename(columns={'element_category': 'category'}, inplace=True)
+        print(aqi_df)
+        print(co_df)
 
         return aqi_df, co_df
 

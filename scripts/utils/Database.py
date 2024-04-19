@@ -116,4 +116,4 @@ class Database:
                 logging.info(f"Index {index_name} already exists")
         except psycopg2.Error as e:
             logging.error("Error creating index:", e)
-            db.connection.rollback()
+            self.connection.rollback()

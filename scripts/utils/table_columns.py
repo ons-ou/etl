@@ -8,8 +8,9 @@ ELEMENT_COLUMNS = {
     "county_code": "VARCHAR(3)",
     "latitude": "NUMERIC",
     "longitude": "NUMERIC",
-    "season": "VARCHAR(255)",
+    "season": "VARCHAR(6)",
     "day_of_week": "INTEGER",
+    "category": "VARCHAR(20)"
 }
 
 AQI_COLUMNS = {
@@ -20,6 +21,7 @@ AQI_COLUMNS = {
     "county_code": "VARCHAR(3)",
     "latitude": "NUMERIC",
     "longitude": "NUMERIC",
-    "season": "VARCHAR(255)",
+    "season": "VARCHAR(6)",
     "day_of_week": "INTEGER",
+    "category": "VARCHAR(30)"
 }

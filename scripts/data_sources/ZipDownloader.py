@@ -4,22 +4,13 @@ import zipfile
 
 from scripts.data_sources.BaseDownloader import BaseDownloader
 
-ELEMENT_CODES = {
-    "CO": "42101",
-    "SO2": "42401",
-    "Ozone": "44201",
-    "NO2": "42602",
-    "PM2.5": "88101",
-    "PM10": "81102"
-}
-
 
 class ZipDownloader(BaseDownloader):
     def __init__(self, download_folder):
         super().__init__(download_folder)
 
     def download_data(self, element, year, state=None):
-        name = f"daily_{ELEMENT_CODES[element]}_{year}"
+        name = f"daily_{element}_{year}"
         csv_file_path = os.path.join(self.download_folder, f"{name}.csv")
 
         if os.path.exists(csv_file_path):

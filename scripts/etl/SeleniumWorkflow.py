@@ -9,14 +9,14 @@ from scripts.data_sources.SeleniumDownloader import SeleniumDownloader
 from scripts.etl.BaseWorkflow import BaseWorkflow
 from scripts.utils.Database import Database
 from scripts.utils.etl_utils import common_transformation, STATES, LAST_SELENIUM_DATE, insert_aqi_data, \
-    insert_element_data, DEFAULT_START_DATE
+    insert_element_data, DEFAULT_START_DATE, ELEMENT_CODES
 
 
 class SeleniumWorkflow(BaseWorkflow):
     @staticmethod
     def workflow_init(element):
         db = BaseWorkflow.workflow_init(element)
-        table_name = str(element).replace('.', '_').lower()+"_data"
+        table_name = str(ELEMENT_CODES[element]).replace('.', '_').lower()+"_data"
         max_date = db.get_max_query(table_name, "date_local")
         db.disconnect()
         if max_date is None:
@@ -48,7 +48,7 @@ class SeleniumWorkflow(BaseWorkflow):
                 yield new_name
 
     @staticmethod
-    def transform_data(path, max_date):
+    def transform_data(path, max_date, element):
         df = pd.read_csv(path)
         df.columns = [
             "date_local", "source", "site_id", "poc", "first_max_value", "units", "aqi", "local_site_name", "observation_count",
@@ -61,10 +61,13 @@ class SeleniumWorkflow(BaseWorkflow):
             "state_code", "county_code", "latitude", "longitude",
         ]
 
-        df = common_transformation(df, max_date, columns_to_keep)
+        df = common_transformation(df, max_date, columns_to_keep, element)
 
-        aqi_df = df.drop(columns=['first_max_value'])
-        co_df = df.drop(columns=['aqi'])
+        aqi_df = df.drop(columns=['first_max_value', 'element_category'])
+        aqi_df.rename(columns={'aqi_category': 'category'}, inplace=True)
+
+        co_df = df.drop(columns=['aqi', 'aqi_category'])
+        co_df.rename(columns={'element_category': 'category'}, inplace=True)
 
         return aqi_df, co_df
 

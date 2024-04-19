@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 
 from scripts.utils.Database import Database
-from scripts.utils.etl_utils import ELEMENTS, DEFAULT_START_DATE
+from scripts.utils.etl_utils import ELEMENTS, DEFAULT_START_DATE, ELEMENT_CODES
 from scripts.utils.table_columns import AQI_COLUMNS, ELEMENT_COLUMNS
 
 
@@ -28,7 +28,7 @@ class BaseWorkflow:
 
             db.create_month_year_index("aqi_data")
         # Create element data table
-        table_name = str(element).replace('.', '_').lower()+"_data"
+        table_name = str(ELEMENT_CODES[element]).replace('.', '_').lower()+"_data"
         db.create_table(table_name, ELEMENT_COLUMNS,
                         primary_keys=["date_local", "latitude", "longitude"],
                         foreign_keys= foreign_keys)
@@ -40,7 +40,7 @@ class BaseWorkflow:
         raise NotImplementedError("Subclass must implement abstract method")
 
     @staticmethod
-    def transform_data(path, max_date):
+    def transform_data(path, max_date, element):
         raise NotImplementedError("Subclass must implement abstract method")
 
     @staticmethod
@@ -50,7 +50,7 @@ class BaseWorkflow:
     def transform_data_and_load(self, element, path, max_date):
         if path is not None:
             logging.info(f"Starting transforming data for {element} from {path}")
-            aqi_df, co_df = self.transform_data(path, max_date)
+            aqi_df, co_df = self.transform_data(path, max_date, element)
             logging.info(f"Starting Loading data for {element} from {path}")
             self.load_data(aqi_df, co_df, element)
             logging.info(f"Loaded data for {element} from {path}")
