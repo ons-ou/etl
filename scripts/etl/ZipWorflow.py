@@ -17,7 +17,7 @@ class ZipWorkflow(BaseWorkflow):
     @staticmethod
     def workflow_init(element):
         db = BaseWorkflow.workflow_init(element)
-        table_name = str(ELEMENT_CODES[element]).replace('.', '_').lower()+"_data"
+        table_name = str(element).replace('.', '_').lower()+"_data"
         max_date = db.get_max_query(table_name, "date_local", where_condition="first_max_hour IS NOT NULL")
         db.disconnect()
         if max_date is None:
@@ -38,7 +38,7 @@ class ZipWorkflow(BaseWorkflow):
                 directory = os.path.join(self.current_directory, "daily_data_zip")
                 # Perform ETL process for the given element, state, and year
                 downloader = ZipDownloader(directory)
-                future = executor.submit(downloader.download_data, element, year)
+                future = executor.submit(downloader.download_data, ELEMENT_CODES[element], year)
                 futures.append((future, directory))
 
             for future, directory in futures:

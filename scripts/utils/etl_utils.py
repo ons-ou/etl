@@ -6,15 +6,15 @@ from datetime import datetime
 from scripts.utils.zip_workflow_utils import get_max_year
 
 ELEMENT_CODES = {
-    "42101": "CO",
-    "42401": "SO2",
-    "44201": "Ozone",
-    "42602": "NO2",
-    "88101": "PM2.5",
-    "81102": "PM10"
+  "CO": "42101",
+  "SO2": "42401",
+  "Ozone": "44201",
+  "NO2": "42602",
+  "PM2.5": "88101",
+  "PM10": "81102"
 }
 
-ELEMENTS = ["42101", "42401", "44201", "42602", "88101", "81102"]
+ELEMENTS = ["CO", "SO2", "Ozone", "NO2", "PM2.5", "PM10"]
 STATES = ['01', '02', '04', '05', '06', '08', '09', '10', '11', '12', '13', '15', '16', '17', '18', '19', '20', '21',
           '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39',
           '40', '41', '42', '44', '45', '46', '47', '48', '49', '50', '51', '53', '54', '55', '56']
@@ -37,8 +37,6 @@ def common_transformation(df, max_date, columns_to_keep, element):
         (df['latitude'].apply(lambda x: 19.50139 <= x <= 64.85694)) &
         (df['longitude'].apply(lambda x: -161.75583 <= x <= -68.01197))
         ]
-
-    df = df.dropna(subset=['aqi'])
 
     df['day_of_week'] = df['date_local'].dt.dayofweek
 
@@ -76,12 +74,12 @@ def common_transformation(df, max_date, columns_to_keep, element):
     def get_element_category(value, element):
         # Define thresholds for each element
         thresholds = {
-            '42101': [0, 4.4, 9, 12, 24, 49, 99, 199, 399, float('inf')],
-            '42401': [0, 35, 75, 185, 304, 604, float('inf')],
-            '42602': [0, 53, 100, 360, 649, 1249, float('inf')],
-            '81102': [0, 54, 154, 254, 354, 424, float('inf')],
-            '88101': [0, 12, 35.4, 55.4, 150.4, 250.4, float('inf')],
-            '44201': [0, 54, 70, 85, 105, 200, float('inf')]
+            'CO': [0, 4.4, 9, 12, 24, 49, 99, 199, 399, float('inf')],
+            'SO2': [0, 35, 75, 185, 304, 604, float('inf')],
+            'NO2': [0, 53, 100, 360, 649, 1249, float('inf')],
+            'PM2.5': [0, 54, 154, 254, 354, 424, float('inf')],
+            'PM10': [0, 12, 35.4, 55.4, 150.4, 250.4, float('inf')],
+            'Ozone': [0, 54, 70, 85, 105, 200, float('inf')]
         }
 
         categories = ['Normal', 'No health effects', 'Mild', 'Moderate', 'Unhealthy', 'Very Unhealthy', 'Hazardous']
@@ -110,6 +108,6 @@ def insert_element_data(db, element, element_df, update_columns=None):
     # Insert data into element_data table
     element_columns = list(element_df.columns)
     element_values = [tuple(row) for row in element_df.values]
-    table_name = f"{str(ELEMENT_CODES[element]).replace('.', '_').lower()}_data"
+    table_name = f"{str(element).replace('.', '_').lower()}_data"
     db.bulk_insert(table_name, element_columns, element_values, conflict_keys,
                    update_columns=update_columns)

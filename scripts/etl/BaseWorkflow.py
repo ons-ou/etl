@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 
 from scripts.utils.Database import Database
-from scripts.utils.etl_utils import ELEMENTS, DEFAULT_START_DATE, ELEMENT_CODES
+from scripts.utils.etl_utils import ELEMENTS
 from scripts.utils.table_columns import AQI_COLUMNS, ELEMENT_COLUMNS
 
 
@@ -28,7 +28,7 @@ class BaseWorkflow:
 
             db.create_month_year_index("aqi_data")
         # Create element data table
-        table_name = str(ELEMENT_CODES[element]).replace('.', '_').lower()+"_data"
+        table_name = str(element).replace('.', '_').lower()+"_data"
         db.create_table(table_name, ELEMENT_COLUMNS,
                         primary_keys=["date_local", "latitude", "longitude"],
                         foreign_keys= foreign_keys)

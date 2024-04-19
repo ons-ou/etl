@@ -16,7 +16,7 @@ class SeleniumWorkflow(BaseWorkflow):
     @staticmethod
     def workflow_init(element):
         db = BaseWorkflow.workflow_init(element)
-        table_name = str(ELEMENT_CODES[element]).replace('.', '_').lower()+"_data"
+        table_name = str(element).replace('.', '_').lower()+"_data"
         max_date = db.get_max_query(table_name, "date_local")
         db.disconnect()
         if max_date is None:
@@ -32,14 +32,14 @@ class SeleniumWorkflow(BaseWorkflow):
             futures = []
             for year in range(max_year, current_year + 1):
                 for state in STATES:
-                    name = f"{element}_{state}_{year}"
+                    name = f"{ELEMENT_CODES[element]}_{state}_{year}"
                     logging.info(f"Starting Extraction for {name}")
 
                     directory = os.path.join(self.current_directory, "daily_data_selenium")
                     # Perform ETL process for the given element, state, and year
                     downloader = SeleniumDownloader(directory)
                     new_name = os.path.join(directory, f"{name}.csv")
-                    future = executor.submit(downloader.download_data, element, year, state)
+                    future = executor.submit(downloader.download_data, ELEMENT_CODES[element], year, state)
                     futures.append((future, directory, new_name))
 
             for future, directory, new_name in futures:

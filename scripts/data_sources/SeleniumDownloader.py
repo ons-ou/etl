@@ -18,7 +18,7 @@ class SeleniumDownloader(BaseDownloader):
             "profile.default_content_settings.popups": 0
         }
         options.add_experimental_option("prefs", prefs)
-        # options.add_argument("--headless")
+        options.add_argument("--headless")
 
         self.driver = webdriver.Chrome(options=options)
         self.driver.implicitly_wait(30)
