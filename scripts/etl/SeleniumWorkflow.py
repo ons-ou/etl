@@ -19,6 +19,8 @@ class SeleniumWorkflow(BaseWorkflow):
         table_name = str(element).replace('.', '_').lower()+"_data"
         max_date = db.get_max_query(table_name, "date_local")
         db.disconnect()
+        if max_date >= LAST_SELENIUM_DATE.date():
+            return element, None
         if max_date is None:
             return element, DEFAULT_START_DATE
         else:
@@ -35,7 +37,7 @@ class SeleniumWorkflow(BaseWorkflow):
                     name = f"{ELEMENT_CODES[element]}_{state}_{year}"
                     logging.info(f"Starting Extraction for {name}")
 
-                    directory = os.path.join(self.current_directory, "daily_data_selenium")
+                    directory = os.path.join(self.current_directory, "daily_data_selenium", name)
                     # Perform ETL process for the given element, state, and year
                     downloader = SeleniumDownloader(directory)
                     new_name = os.path.join(directory, f"{name}.csv")
@@ -43,9 +45,10 @@ class SeleniumWorkflow(BaseWorkflow):
                     futures.append((future, directory, new_name))
 
             for future, directory, new_name in futures:
-                old_name = os.path.join(directory, future.result())
-                os.rename(old_name, new_name)
-                yield new_name
+                if future.result() is not None:
+                    old_name = os.path.join(directory, future.result())
+                    os.rename(old_name, new_name)
+                    yield new_name
 
     @staticmethod
     def transform_data(path, max_date, element):

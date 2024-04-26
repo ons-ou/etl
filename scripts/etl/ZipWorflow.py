@@ -67,8 +67,6 @@ class ZipWorkflow(BaseWorkflow):
 
         co_df = df.drop(columns=['aqi', 'aqi_category'])
         co_df.rename(columns={'element_category': 'category'}, inplace=True)
-        print(aqi_df)
-        print(co_df)
 
         return aqi_df, co_df
 

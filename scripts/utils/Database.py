@@ -1,15 +1,18 @@
 import logging
-
 import psycopg2
+from dotenv import load_dotenv
+import os
 
+# Load environment variables from .env file
+load_dotenv()
 
 class Database:
     def __init__(self):
-        self.dbname = 'air_quality'
-        self.user = 'postgres'
-        self.password = '0000'
-        self.host = 'localhost'
-        self.port = 5432
+        self.dbname = os.getenv('DB_NAME')
+        self.user = os.getenv('DB_USER')
+        self.password = os.getenv('DB_PASSWORD')
+        self.host = os.getenv('DB_HOST')
+        self.port = os.getenv('DB_PORT')
         self.connection = None
 
     def connect(self):

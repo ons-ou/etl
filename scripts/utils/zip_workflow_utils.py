@@ -46,8 +46,8 @@ def update_cache():
 
 def get_max_year():
     url = 'https://aqs.epa.gov/aqsweb/airdata/download_files.html'
-
     # Fetch the webpage
+
     response = requests.get(url)
     if response.status_code == 200:
         try:

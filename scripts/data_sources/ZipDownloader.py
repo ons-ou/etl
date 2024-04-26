@@ -1,4 +1,6 @@
 import os
+import time
+
 import requests
 import zipfile
 
@@ -18,16 +20,32 @@ class ZipDownloader(BaseDownloader):
 
         zip_file_path = os.path.join(self.download_folder, f"{name}.zip")
         url = f"https://aqs.epa.gov/aqsweb/airdata/{name}.zip"
-        response = requests.get(url)
-        with open(zip_file_path, "wb") as file:
-            file.write(response.content)
 
-        with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
-            zip_ref.extractall(self.download_folder)
+        max_retries = 3
+        retry_count = 0
+        while retry_count < max_retries:
+            try:
+                response = requests.get(url, timeout=30)  # Increase timeout as needed
+                response.raise_for_status()  # Raise an exception for HTTP errors
+                with open(zip_file_path, "wb") as file:
+                    file.write(response.content)
 
-        os.remove(zip_file_path)
+                with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
+                    zip_ref.extractall(self.download_folder)
 
-        return csv_file_path
+                os.remove(zip_file_path)
+
+                return csv_file_path
+
+            except (requests.exceptions.ChunkedEncodingError, requests.exceptions.RequestException) as e:
+                print(f"An error occurred for {element} {year}: {e}")
+                retry_count += 1
+                if retry_count < max_retries:
+                    print(f"Retrying ({retry_count}/{max_retries})...")
+                    time.sleep(5)  # Wait before retrying
+
+        print("Failed to download data after retrying.")
+        return None
 
     def cleanup(self):
         os.remove(self.download_folder)

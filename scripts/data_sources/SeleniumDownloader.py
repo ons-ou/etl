@@ -30,12 +30,14 @@ class SeleniumDownloader(BaseDownloader):
           rather than directly initiating the download.
         """
         name = f"{element}_{state}_{year}"
-        csv_file_path = os.path.join(self.download_folder, f"{name}.csv")
+        csv_file_path = os.path.join(self.download_folder, name + ".csv")
 
         if os.path.exists(csv_file_path):
             return csv_file_path
 
         try:
+            if element == "88101":
+                element += "%27%2C%2788502"
             # Construct the URL with the form data
             url = f"https://www3.epa.gov/cgi-bin/broker?_service=data&_debug=0&_program=dataprog.ad_data_daily_airnow.sas&poll={element}&year={year}&state={state}&cbsa={cbsa}&county={county}&site={site}"
 
@@ -48,7 +50,7 @@ class SeleniumDownloader(BaseDownloader):
             # Wait for the download to complete
             return self.wait_for_new_file()
         except Exception as e:
-            print("An error occurred:", e)
+            print("Couldn't get file for ", url)
             return None
         finally:
             self.cleanup()

@@ -42,6 +42,8 @@ def extract_state_county_data():
             county_data.append((state_code, county_code, name))
 
     county_data.append((12, 86, "Miami-Dade"))
+    county_data.append((23, 901, "Farmville"))
+
     return state_data, county_data
 
 
@@ -76,6 +78,8 @@ def fill_tables():
 
     db.bulk_insert("counties", ["state_code", "county_code", "county_name"], counties_data,
                    ["state_code", "county_code"])
+
+    print("Table 'states' and 'counties' filled")
 
 
 if __name__ == '__main__':

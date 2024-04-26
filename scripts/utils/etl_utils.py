@@ -2,7 +2,7 @@ import os
 import pickle
 
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 from scripts.utils.zip_workflow_utils import get_max_year
 
 ELEMENT_CODES = {
@@ -14,20 +14,21 @@ ELEMENT_CODES = {
   "PM10": "81102"
 }
 
-ELEMENTS = ["CO", "SO2", "Ozone", "NO2", "PM2.5", "PM10"]
+ELEMENTS = ["Ozone", "SO2", "CO", "NO2", "PM2.5", "PM10"]
 STATES = ['01', '02', '04', '05', '06', '08', '09', '10', '11', '12', '13', '15', '16', '17', '18', '19', '20', '21',
           '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39',
           '40', '41', '42', '44', '45', '46', '47', '48', '49', '50', '51', '53', '54', '55', '56']
 
 # This one will only be used in case tables are empty
 DEFAULT_START_DATE = datetime(1980, 1, 1)
-
-LAST_SELENIUM_DATE = datetime.now()
+LAST_SELENIUM_DATE = datetime.now() - timedelta(days = 30)
 LAST_ZIP_DATE = datetime(get_max_year(), 1, 1)
 
 
 def common_transformation(df, max_date, columns_to_keep, element):
     df['date_local'] = pd.to_datetime(df['date_local'])
+    df = df[df["state_code"] != "CC"]
+    df["state_code"] = df["state_code"].astype(int)
     df = df[(df['date_local'] >= pd.to_datetime(max_date)) & (df['aqi'] >= 0) & (df['first_max_value'] >= 0)
             & (df["state_code"] <= 56)]
 

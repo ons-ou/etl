@@ -54,12 +54,13 @@ class BaseWorkflow:
             logging.info(f"Starting Loading data for {element} from {path}")
             self.load_data(aqi_df, co_df, element)
             logging.info(f"Loaded data for {element} from {path}")
-            os.remove(path)
+            #os.remove(path)
 
     def workflow_thread(self):
         with ThreadPoolExecutor() as executor:
             futures = []
             for element in ELEMENTS:
+                logging.info(f"Starting Workflow for {element}")
                 future = executor.submit(self.workflow_init, element)
                 futures.append(future)
 
