@@ -1,11 +1,8 @@
 import logging
 import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timedelta
 
-from scripts.utils.Database import Database
-from scripts.utils.etl_utils import ELEMENTS
-from scripts.utils.table_columns import AQI_COLUMNS, ELEMENT_COLUMNS
+from scripts.Database.Database import Database
+from scripts.Database.table_columns import AQI_COLUMNS, ELEMENT_COLUMNS
 
 
 class BaseWorkflow:
@@ -14,7 +11,6 @@ class BaseWorkflow:
 
     @staticmethod
     def workflow_init(element):
-        logging.info(f"Starting Workflow for {element}")
         db = Database()
         db.connect()
         foreign_keys = [
@@ -55,21 +51,3 @@ class BaseWorkflow:
             self.load_data(aqi_df, co_df, element)
             logging.info(f"Loaded data for {element} from {path}")
             #os.remove(path)
-
-    def workflow_thread(self):
-        with ThreadPoolExecutor() as executor:
-            futures = []
-            for element in ELEMENTS:
-                logging.info(f"Starting Workflow for {element}")
-                future = executor.submit(self.workflow_init, element)
-                futures.append(future)
-
-            for future in as_completed(futures):
-                element, max_date = future.result()
-                if max_date is not None:
-                    logging.info(f"Starting Extraction for {element} after {max_date}")
-                    for path in self.extract_data(element, max_date):
-                        logging.info(f"Extracted data to {path}")
-                        executor.submit(self.transform_data_and_load, element, path, max_date)
-
-            return futures

@@ -7,7 +7,7 @@ import pandas as pd
 
 from scripts.data_sources.SeleniumDownloader import SeleniumDownloader
 from scripts.etl.BaseWorkflow import BaseWorkflow
-from scripts.utils.Database import Database
+from scripts.Database.Database import Database
 from scripts.utils.etl_utils import common_transformation, STATES, LAST_SELENIUM_DATE, insert_aqi_data, \
     insert_element_data, DEFAULT_START_DATE, ELEMENT_CODES
 

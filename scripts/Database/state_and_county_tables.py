@@ -1,4 +1,4 @@
-from scripts.utils.Database import Database
+from scripts.Database.Database import Database
 import requests
 
 

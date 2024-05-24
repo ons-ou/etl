@@ -1,6 +1,3 @@
-import os
-import pickle
-
 import pandas as pd
 from datetime import datetime, timedelta
 from scripts.utils.zip_workflow_utils import get_max_year

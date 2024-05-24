@@ -1,16 +1,15 @@
 import logging
 import os
-from concurrent.futures import ThreadPoolExecutor, wait
+from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 
 import pandas as pd
 
 from scripts.data_sources.ZipDownloader import ZipDownloader
 from scripts.etl.BaseWorkflow import BaseWorkflow
-from scripts.utils.Database import Database
+from scripts.Database.Database import Database
 from scripts.utils.etl_utils import common_transformation, LAST_ZIP_DATE, insert_element_data, insert_aqi_data, \
     DEFAULT_START_DATE, ELEMENT_CODES
-from scripts.utils.zip_workflow_utils import get_last_update_date, get_current_site_update, update_cache
 
 
 class ZipWorkflow(BaseWorkflow):
@@ -80,14 +79,4 @@ class ZipWorkflow(BaseWorkflow):
         insert_element_data(db, element, element_df, ["arithmetic_mean", "first_max_value"])
 
         db.disconnect()
-
-    def workflow_thread(self):
-        if get_last_update_date() == get_current_site_update():
-            logging.info("Up to date")
-            return
-        futures = super().workflow_thread()
-        wait(futures)
-
-        # All threads are completed, update the cache
-        update_cache()
 
